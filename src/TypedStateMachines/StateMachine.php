@@ -14,7 +14,9 @@ abstract class StateMachine implements IStateMachine
 {
 
     /**
-     * Creates a new instance of the state machine.
+     * Creates a new instance of the StateMachine.
+     *
+     * @return IStateMachine
      */
     public static function create(): IStateMachine
     {
@@ -22,11 +24,15 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the current State of the StateMachine.
+     *
      * @return State
      */
     abstract public function getCurrentState(): State;
 
     /**
+     * Fetch the States of the StateMachine.
+     *
      * @return State[]
      */
     public function getStates(): array
@@ -52,8 +58,8 @@ abstract class StateMachine implements IStateMachine
      * on has a state class of App\TypedStateMachines\ToasterStateMachine\States\On
      * and saved in the datastore as on.
      *
-     * @param $string State representation which follows follows the prescibed state format above
-     * @return \TypedStateMachines\State
+     * @param string State representation which follows follows the prescibed state format above
+     * @return State
      */
     protected function guessStateClass(string $state): State
     {
@@ -66,11 +72,17 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the Edges of the StateMachine.
+     *
      * @return Edge[]
      */
     abstract public function getEdges(): array;
 
     /**
+     * Trigger the provided Transition on the StateMachine.
+     * If the Transition is successful, it will fire the TransitionSuccess event.
+     * If the Transition causes a State change, it will fire the StateChange event.
+     *
      * @param Transition $transition
      * @return TransitionResult
      * @throws Exceptions\TransitionFailedConditionsException
@@ -147,6 +159,8 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the available Transitions from the current State.
+     *
      * @return Transition[]
      */
     public function getAvailableTransitions(): array
@@ -162,6 +176,8 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the available Transitions, with passing conditions, from the current State.
+     *
      * @return Transition[]
      */
     public function getValidAvailableTransitions(): array
@@ -176,6 +192,8 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the Edges from the provided State.
+     *
      * @param State $sourceState
      * @return State[]
      */
@@ -210,6 +228,7 @@ abstract class StateMachine implements IStateMachine
     /**
      * Should the state machine fire events for StateChange and TransitionSuccess.
      *
+     * @param IEvent $event
      * @return bool
      */
     public function shouldFireEvent(IEvent $event): bool

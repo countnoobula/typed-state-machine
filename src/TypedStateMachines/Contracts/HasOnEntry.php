@@ -6,7 +6,7 @@ interface HasOnEntry
 {
 
     /**
-     * This allows a function to be executed on entry of the state during a transition.
+     * This allows a function to be executed on entry of the State during a Transition.
      *
      * @return bool
      */

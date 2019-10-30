@@ -18,7 +18,13 @@ class StateMapping
      */
     public $target;
 
-    public function __construct( $source, State $target)
+    /**
+     * Constructor of the StateMapping class.
+     *
+     * @param State $source
+     * @param State $target
+     */
+    public function __construct(State $source, State $target)
     {
         $this->source = $source;
         $this->target = $target;
@@ -43,16 +49,25 @@ class EdgesBuilder
      */
     private $current_mappings;
 
+    /**
+     * Constructor of the EdgesBuilder class.
+     */
     public function __construct()
     {
         $this->edges            = [];
         $this->current_mappings = [];
     }
 
+    /**
+     * Specify the sources of an Edge.
+     *
+     * @param State ...$states
+     * @return EdgesBuilder
+     */
     public function sources(State ...$states): EdgesBuilder
     {
         if ($this->current_mappings != null) {
-            throw new LogicException("sources already defined");
+            throw new LogicException("Sources already defined");
         }
 
         $this->current_mappings = array_map(
@@ -63,14 +78,20 @@ class EdgesBuilder
         return $this;
     }
 
+    /**
+     * Specify the target of an Edge.
+     *
+     * @param State $state
+     * @return EdgesBuilder
+     */
     public function target(State $state): EdgesBuilder
     {
         if ($this->current_transition == null) {
-            throw new LogicException("transition undefined");
+            throw new LogicException("Transition undefined");
         }
 
         if ($this->current_mappings == null) {
-            throw new LogicException("source undefined");
+            throw new LogicException("Source undefined");
         }
 
         $this->current_mappings = array_map(
@@ -82,6 +103,12 @@ class EdgesBuilder
         return $this;
     }
 
+    /**
+     * Specify the Transition of the Edge.
+     *
+     * @param Transition $transition
+     * @return EdgesBuilder
+     */
     public function transition(Transition $transition): EdgesBuilder
     {
         $this->buildEdges();
@@ -89,6 +116,11 @@ class EdgesBuilder
         return $this;
     }
 
+    /**
+     * Build the current Transition/source/target into the edges array.
+     *
+     * @return void
+     */
     private function buildEdges()
     {
         if ($this->current_transition == null) {
@@ -96,7 +128,7 @@ class EdgesBuilder
         }
 
         if (! $this->current_mappings) {
-            throw new LogicException("transition ill-defined, missing state mapping");
+            throw new LogicException("Transition ill-defined, missing state mapping");
         }
 
         $this->edges              = array_merge(
@@ -110,6 +142,11 @@ class EdgesBuilder
         $this->current_transition = null;
     }
 
+    /**
+     * Build all Edges and return the Edges of the builder.
+     *
+     * @return array|Edge[]
+     */
     public function build()
     {
         $this->buildEdges();
