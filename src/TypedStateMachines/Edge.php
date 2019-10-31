@@ -19,6 +19,13 @@ class Edge
      */
     private $targetState;
 
+    /**
+     * Construct the Edge for the StateMachineGraph.
+     *
+     * @param State $sourceState
+     * @param Transition $transition
+     * @param State $targetState
+     */
     public function __construct(State $sourceState, Transition $transition, State $targetState)
     {
         $this->sourceState = $sourceState;
@@ -27,6 +34,8 @@ class Edge
     }
 
     /**
+     * Fetch the State that this Transition starts from.
+     *
      * @return State
      */
     public function getSourceState(): State
@@ -35,6 +44,8 @@ class Edge
     }
 
     /**
+     * Fetch the Transition linking the source to the target.
+     *
      * @return Transition
      */
     public function getTransition(): Transition
@@ -43,6 +54,8 @@ class Edge
     }
 
     /**
+     * Fetch the State that this Transition points to.
+     *
      * @return State
      */
     public function getTargetState(): State

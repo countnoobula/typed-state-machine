@@ -9,6 +9,11 @@ class OrCondition extends Condition
      */
     private $conditions;
 
+    /**
+     * Constructs the OrCondition of the provided conditions.
+     *
+     * @param array Condition[]
+     */
     public function __construct(Condition ...$conditions)
     {
         $this->conditions = $conditions;

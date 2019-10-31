@@ -8,6 +8,13 @@ use TypedStateMachines\TransitionResult;
 
 class TransitionNoEdgeException extends TransitionException
 {
+
+    /**
+     * Constructor for the Exception thrown when a Transition does not have the Edge from the current State.
+     *
+     * @param State $state
+     * @param Transition $transition
+     */
     public function __construct(State $state, Transition $transition)
     {
         parent::__construct(

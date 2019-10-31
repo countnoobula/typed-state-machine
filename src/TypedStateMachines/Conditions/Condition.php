@@ -5,7 +5,6 @@ namespace TypedStateMachines\Conditions;
 abstract class Condition
 {
     /**
-     * Array of failed conditions.
      * @var array
      */
     protected $failed = [];

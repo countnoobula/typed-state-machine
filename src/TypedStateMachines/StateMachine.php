@@ -4,13 +4,19 @@ namespace TypedStateMachines;
 
 use TypedStateMachines\Contracts\HasOnEntry;
 use TypedStateMachines\Contracts\HasOnExit;
+use TypedStateMachines\Exceptions\TransitionNoEdgeException;
+use TypedStateMachines\Exceptions\TransitionFailedConditionsException;
+use TypedStateMachines\Events\StateChange;
+use TypedStateMachines\Events\TransitionSuccess;
 use LogicException;
 
 abstract class StateMachine implements IStateMachine
 {
 
     /**
-     * Creates a new instance of the state machine.
+     * Creates a new instance of the StateMachine.
+     *
+     * @return IStateMachine
      */
     public static function create(): IStateMachine
     {
@@ -18,11 +24,15 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the current State of the StateMachine.
+     *
      * @return State
      */
     abstract public function getCurrentState(): State;
 
     /**
+     * Fetch the States of the StateMachine.
+     *
      * @return State[]
      */
     public function getStates(): array
@@ -36,7 +46,7 @@ abstract class StateMachine implements IStateMachine
         );
     }
 
-    /*
+    /**
      * This method does some awesome magic- we can make a reliable guess as to what state class
      * you are looking for from a string representation of state. This guess relies on the following:
      * 1. String representation of state must be in snake_case
@@ -44,12 +54,12 @@ abstract class StateMachine implements IStateMachine
      * 3. State class must exist in the namespace {Path/To/StateMachine}/States/{StateName}
      *
      * For example:
-     * granted has a state class of Granted and saved in the datastore as granted
-     * offers_received has a state class of App\StateMachines\JobStateMachine\States\OffersReceived
-     * and saved in the datastore as offers_received
+     * on has a state class of On and saved in the datastore as on
+     * on has a state class of App\TypedStateMachines\ToasterStateMachine\States\On
+     * and saved in the datastore as on.
      *
-     * @param $string State representation which follows follows the prescibed state format above
-     * @return \TypedStateMachines\State
+     * @param string State representation which follows follows the prescibed state format above
+     * @return State
      */
     protected function guessStateClass(string $state): State
     {
@@ -62,11 +72,17 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the Edges of the StateMachine.
+     *
      * @return Edge[]
      */
     abstract public function getEdges(): array;
 
     /**
+     * Trigger the provided Transition on the StateMachine.
+     * If the Transition is successful, it will fire the TransitionSuccess event.
+     * If the Transition causes a State change, it will fire the StateChange event.
+     *
      * @param Transition $transition
      * @return TransitionResult
      * @throws Exceptions\TransitionFailedConditionsException
@@ -97,13 +113,13 @@ abstract class StateMachine implements IStateMachine
         }
 
         if (count($edges) == 0) {
-            throw new Exceptions\TransitionNoEdgeException($this->getCurrentState(), $transition);
+            throw new TransitionNoEdgeException($this->getCurrentState(), $transition);
         }
 
         $condition = $transition->getCondition();
         if (!$condition->resolve()) {
             $failedConditions = json_encode($condition->getFailed());
-            throw new Exceptions\TransitionFailedConditionsException($failedConditions, $transition);
+            throw new TransitionFailedConditionsException($failedConditions, $transition);
         }
 
         $oldState = $currentState;
@@ -129,10 +145,22 @@ abstract class StateMachine implements IStateMachine
             $newState->onEntry();
         }
 
+        $transitionSuccessEvent = new TransitionSuccess($this, $transition);
+        if ($this->shouldFireEvent($transitionSuccessEvent)) {
+            $this->fireEvent($transitionSuccessEvent);
+        }
+
+        $stateChangeEvent = new StateChange($this, $transition);
+        if ($currentState !== $newState && $this->shouldFireEvent($stateChangeEvent)) {
+            $this->fireEvent($stateChangeEvent);
+        }
+
         return $transitionResult;
     }
 
     /**
+     * Fetch the available Transitions from the current State.
+     *
      * @return Transition[]
      */
     public function getAvailableTransitions(): array
@@ -148,6 +176,8 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the available Transitions, with passing conditions, from the current State.
+     *
      * @return Transition[]
      */
     public function getValidAvailableTransitions(): array
@@ -162,6 +192,8 @@ abstract class StateMachine implements IStateMachine
     }
 
     /**
+     * Fetch the Edges from the provided State.
+     *
      * @param State $sourceState
      * @return State[]
      */
@@ -191,5 +223,49 @@ abstract class StateMachine implements IStateMachine
                 }, $this->getValidAvailableTransitions()
             )
         );
+    }
+
+    /**
+     * Should the state machine fire events for StateChange and TransitionSuccess.
+     *
+     * @param IEvent $event
+     * @return bool
+     */
+    public function shouldFireEvent(IEvent $event): bool
+    {
+        return true;
+    }
+
+    /**
+     * Fires the provided event into the bus.
+     *
+     * @param IEvent $event
+     * @return void
+     */
+    public function fireEvent(IEvent $event)
+    {
+        $class     = get_class($event);
+        $listeners = $this->getListeners();
+
+        if (array_key_exists($class, $listeners)) {
+            foreach ($listeners[$class] as $listener) {
+                /** @var IListener $listenerInstance */
+                $listenerInstance = new $listener();
+                $listenerInstance->handle($event);
+            }
+        }
+    }
+
+    /**
+     * Fetch the listeners for the events.
+     *
+     * @return array
+     */
+    public function getListeners(): array
+    {
+        return [
+            StateChange::class => [],
+            TransitionSuccess::class => [],
+        ];
     }
 }
