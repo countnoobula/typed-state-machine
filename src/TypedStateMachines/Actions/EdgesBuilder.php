@@ -123,7 +123,7 @@ class EdgesBuilder
      */
     private function buildEdges()
     {
-        if ($this->current_transition == null) {
+        if ($this->current_transition === null) {
             return;
         }
 
