@@ -9,6 +9,11 @@ class AndCondition extends Condition
      */
     private $conditions;
 
+    /**
+     * Constructs the AndCondition of the provided conditions.
+     *
+     * @param Condition ...$conditions
+     */
     public function __construct(Condition ...$conditions)
     {
         $this->conditions = $conditions;

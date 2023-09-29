@@ -9,6 +9,11 @@ class NotCondition extends Condition
      */
     private $condition;
 
+    /**
+     * Constructor of the NotCondition.
+     *
+     * @param Condition $condition
+     */
     public function __construct(Condition $condition)
     {
         $this->condition = $condition;

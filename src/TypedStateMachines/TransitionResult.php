@@ -4,9 +4,15 @@ namespace TypedStateMachines;
 
 class TransitionResult
 {
+    /**
+     * Constants representing possible errors from the Transition.
+     */
     public const ERR_NO_EDGE_FOUND    = "no_edge";
     public const ERR_CONDITION_FAILED = "conditions_failed";
 
+    /**
+     * @var array
+     */
     protected $error_translations = [
         self::ERR_NO_EDGE_FOUND => 'No edge found.',
         self::ERR_CONDITION_FAILED => 'Condition failed while trying to apply the transition.',

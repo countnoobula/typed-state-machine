@@ -7,6 +7,12 @@ use TypedStateMachines\TransitionResult;
 
 class TransitionFailedConditionsException extends TransitionException
 {
+    /**
+     * Constructor for the Exception thrown when a Transition fails its conditions.
+     *
+     * @param string $failedConditions
+     * @param Transition $transition
+     */
     public function __construct(string $failedConditions, Transition $transition)
     {
         parent::__construct(
